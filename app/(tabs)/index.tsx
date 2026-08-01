@@ -1,24 +1,26 @@
-import { HOME_BALANCE, HOME_SUBSCRIPTIONS, HOME_USER } from "@/constants/data";
+import { HOME_BALANCE, HOME_SUBSCRIPTIONS, UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
 import { icons } from "@/constants/icons";
 import images from "@/constants/images";
 import "@/global.css";
-import { Link } from "expo-router";
 import { styled } from 'nativewind';
-import { View, Image, Text } from "react-native";
-import { SafeAreaView as  RNSafeAreaView } from "react-native-safe-area-context";
+import { View, Image, Text, FlatList } from "react-native";
+import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import { formatCurrency } from "@/lib/utils";
 import dayjs from "dayjs";
 import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
-import { UPCOMING_SUBSCRIPTIONS } from "@/constants/data";
-import { FlatList } from "react-native";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useState } from "react";
+import { useUser } from "@clerk/expo";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 export default function App() {
+  const { user } = useUser();
   const [expandedSubscriptionId, setExpandedSubscriptionId] = useState<string | null>(null);
+
+  const displayName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Your account";
+  const avatarSource = user?.imageUrl ? { uri: user.imageUrl } : images.avatar;
 
   return (
     <SafeAreaView className="flex-1 bg-background p-5">
@@ -27,8 +29,8 @@ export default function App() {
           <>
             <View className="home-header">
               <View className="home-user">
-                <Image source={images.avatar} className="home-avatar" />
-                <Text className="home-user-name">{HOME_USER.name}</Text>
+                <Image source={avatarSource} className="home-avatar" />
+                <Text className="home-user-name">{displayName}</Text>
               </View>
 
               <Image source={icons.add} className="home-add-icon" />
