@@ -20,6 +20,7 @@ const SignUp = () => {
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [resending, setResending] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
 
   useEffect(() => {
     if (authLoaded && isSignedIn) {
@@ -123,6 +124,7 @@ const SignUp = () => {
 
     setResending(true)
     setVerificationError('')
+    setResendMessage('')
 
     try {
       const resendResult = await signUp.verifications.sendEmailCode()
@@ -130,7 +132,7 @@ const SignUp = () => {
         throw resendResult.error
       }
 
-      setVerificationError('A fresh verification code has been sent to your email.')
+      setResendMessage('A fresh verification code has been sent to your email.')
     } catch (error: any) {
       setVerificationError(error?.errors?.[0]?.message || error?.message || 'We could not resend the verification code right now.')
     } finally {
