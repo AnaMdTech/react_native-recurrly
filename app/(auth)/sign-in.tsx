@@ -2,6 +2,7 @@ import { Link, router } from 'expo-router'
 import { useAuth, useClerk, useSignIn } from '@clerk/expo'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native'
 import { useEffect, useState } from 'react'
+import { usePostHog } from 'posthog-react-native'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -9,6 +10,7 @@ const SignIn = () => {
   const { isLoaded: authLoaded, isSignedIn } = useAuth()
   const { signIn } = useSignIn()
   const { setActive } = useClerk()
+  const posthog = usePostHog()
   const [emailAddress, setEmailAddress] = useState('')
   const [password, setPassword] = useState('')
   const [emailError, setEmailError] = useState('')
@@ -68,6 +70,7 @@ const SignIn = () => {
 
       if (signIn.status === 'complete' && signIn.createdSessionId) {
         await setActive({ session: signIn.createdSessionId })
+        posthog.capture('sign_in_completed')
         router.replace('/(tabs)')
         return
       }

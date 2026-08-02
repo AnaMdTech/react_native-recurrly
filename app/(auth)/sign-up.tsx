@@ -2,6 +2,7 @@ import { Link, router } from 'expo-router'
 import { useAuth, useClerk, useSignUp } from '@clerk/expo'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, Text, TextInput, View } from 'react-native'
 import { useEffect, useState } from 'react'
+import { usePostHog } from 'posthog-react-native'
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/
@@ -10,6 +11,7 @@ const SignUp = () => {
   const { isLoaded: authLoaded, isSignedIn } = useAuth()
   const { signUp } = useSignUp()
   const { setActive } = useClerk()
+  const posthog = usePostHog()
   const [emailAddress, setEmailAddress] = useState('')
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
@@ -76,6 +78,7 @@ const SignUp = () => {
         throw sendCodeResult.error
       }
 
+      posthog.capture('sign_up_started')
       setStep('verify')
     } catch (error: any) {
       setFormError(error?.errors?.[0]?.message || error?.message || 'We could not create your account right now.')
@@ -105,6 +108,7 @@ const SignUp = () => {
 
       if (signUp.status === 'complete' && signUp.createdSessionId) {
         await setActive({ session: signUp.createdSessionId })
+        posthog.capture('sign_up_completed')
         router.replace('/(tabs)')
         return
       }
@@ -132,6 +136,7 @@ const SignUp = () => {
         throw resendResult.error
       }
 
+      posthog.capture('verification_code_resent')
       setResendMessage('A fresh verification code has been sent to your email.')
     } catch (error: any) {
       setVerificationError(error?.errors?.[0]?.message || error?.message || 'We could not resend the verification code right now.')
