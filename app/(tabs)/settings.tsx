@@ -5,12 +5,14 @@ import { styled } from "nativewind";
 import { SafeAreaView as RNSafeAreaView } from "react-native-safe-area-context";
 import images from "@/constants/images";
 import dayjs from "dayjs";
+import { usePostHog } from "posthog-react-native";
 
 const SafeAreaView = styled(RNSafeAreaView);
 
 const Settings = () => {
   const { signOut } = useClerk();
   const { user } = useUser();
+  const posthog = usePostHog();
 
   const displayName = user?.fullName || user?.firstName || "Your account";
   const avatarSource = user?.imageUrl ? { uri: user.imageUrl } : images.avatar;
@@ -19,6 +21,7 @@ const Settings = () => {
   const joinedAt = user?.createdAt ? dayjs(user.createdAt).format("DD.MM.YYYY") : "--";
 
   const handleLogout = async () => {
+    posthog.capture('sign_out_completed');
     await signOut();
     router.replace("/(auth)/sign-in");
   };
